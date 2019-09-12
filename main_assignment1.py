@@ -68,9 +68,9 @@ class Values:
         position_tc = (tc - lower) / (upper - lower)
         airfoil_table = pd.DataFrame(data=first_table, columns=['alpha', 'cl', 'cd', 'cm'])
         airfoil_table['cl'] = np.transpose((first_table[:, 1] + position_tc * (
-                    second_table[:, 1] - first_table[:, 1])))
+                second_table[:, 1] - first_table[:, 1])))
         airfoil_table['cd'] = np.transpose((first_table[:, 2] + position_tc * (
-                    second_table[:, 2] - first_table[:, 2])))
+                second_table[:, 2] - first_table[:, 2])))
         distances_alpha = airfoil_table['alpha'] - alpha
         closest_indexes = distances_alpha.abs().argsort()[:2]
         upper_index = closest_indexes[1]

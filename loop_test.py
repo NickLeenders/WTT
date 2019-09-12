@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp2d
+from .user import User
+from .dir import Dir
 
 r = np.linspace(1, 25, 40)
 Fd = np.copy(r)
