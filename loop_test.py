@@ -12,7 +12,7 @@ Pt = np.copy(r)
 R = 89.17
 rho = 1.225
 V0 = 8.0
-omega = 2.61
+omega = 0.8
 theta_p = np.deg2rad(-3.0) 
 beta = Values1.blade_table['beta']/(180/np.pi)
 B =  3
@@ -36,7 +36,7 @@ for i in range(len(r)):
         count +=1
         phi = np.arctan(((1-a)*V0)/((1+a_prime)*omega*r.values[i]))
         alpha = phi-(beta.values[i]+theta_p)
-        Cl, Cd = Values1.interpolate_tc(tc.values[i], alpha)
+        Cl, Cd = Values1.interpolate_tc(tc.values[i], np.rad2deg(alpha))
         #Table lookup for Cl, Cd
         Cn = Cl*np.cos(phi) + Cd*np.sin(phi)
         Ct = Cl*np.sin(phi) - Cd*np.cos(phi)
