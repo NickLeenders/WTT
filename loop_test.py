@@ -1,27 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .user import User
-from .dir import Dir
+from main_assignment1 import Values1
 
-r = np.linspace(1, 25, 40)
+r = Values1.blade_table['r']
+c = Values1.blade_table['c']
+
 Fd = np.copy(r)
 Fl = np.copy(r)
 Pn = np.copy(r)
 Pt = np.copy(r)
-R = 31
+R = 89.17
 rho = 1.225
 V0 = 8.0
 omega = 2.61
 theta_p = np.deg2rad(-3.0) 
-beta = np.deg2rad(2.0)
-c = 1.5
-Cl = 0.5
-Cd = 0.01
+beta = Values1.blade_table['beta']/(180/np.pi)
 B =  3
-
+tc = Values1.blade_table['t/c']
 # Export figures as pdf
 saveFig = 0
-
+cl_list = []
+cd_list = []
+alpha_list = []
+phi_list = []
+a_list = []
 #Initialize alpha
 a_crit = 1/3
 
@@ -29,19 +31,20 @@ tol = 1E-6
 for i in range(len(r)):
     a = 0; a_prime = 0;
     count = 0
+
     while True:
         count +=1
-        phi = np.arctan(((1-a)*V0)/((1+a_prime)*omega*r[i]))
-        alpha = phi-(beta+theta_p)
-        
+        phi = np.arctan(((1-a)*V0)/((1+a_prime)*omega*r.values[i]))
+        alpha = phi-(beta.values[i]+theta_p)
+        Cl, Cd = Values1.interpolate_tc(tc.values[i], alpha)
         #Table lookup for Cl, Cd
         Cn = Cl*np.cos(phi) + Cd*np.sin(phi)
         Ct = Cl*np.sin(phi) - Cd*np.cos(phi)
         
-        F = 2/np.pi*np.arccos(np.exp((-B/2)*(R-r[i])/(r[i]*np.sin(abs(phi)))))
+        F = 2/np.pi*np.arccos(np.exp((-B/2)*(R-r.values[i])/(r.values[i]*np.sin(abs(phi)))))
         #F = 0.981
         
-        sigma = c*B/(2*np.pi*r[i])
+        sigma = c.values[i]*B/(2*np.pi*r.values[i])
         #a = 1/(4*F*(np.sin(phi)**2)/(sigma*Cn)-1)
            
         if a <= a_crit:
@@ -60,10 +63,14 @@ for i in range(len(r)):
         else:
             a = anew
     print('Count = ' + str(count))
-
+    cl_list.append(Cl)
+    cd_list.append(Cd)
+    alpha_list.append(alpha*(180/np.pi))
+    phi_list.append(phi*(180/np.pi))
+    a_list.append(a)
     Vrel = V0*(1-a)/np.sin(phi)
-    Fl = 1/2*rho*Vrel**2*c*Cl
-    Fd = 1/2*rho*Vrel**2*c*Cd
+    Fl = 1/2*rho*Vrel**2*c.values[i]*Cl
+    Fd = 1/2*rho*Vrel**2*c.values[i]*Cd
     Pn[i] = Fl*np.cos(phi)+Fd*np.sin(phi)
     Pt[i] = Fl*np.sin(phi)-Fd*np.cos(phi)
 
@@ -74,10 +81,10 @@ MT_tot = B*MT_blade
 
 plt.figure('Tip speed ratio',figsize=(5,4))
 plt.plot(r, Pt, 'xkcd:amber',
-         label = 'Tip speed ratio, $\lambda$')
+         label = 'Tangential force distribution')
 plt.grid(c='k', alpha=.3)
-plt.xlabel('Time [$s$]', fontsize=14)
-plt.ylabel('$\lambda$ [-]', fontsize=14)
+plt.xlabel('Radius [m]', fontsize=14)
+plt.ylabel('Pt [N]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
 if saveFig:
@@ -86,3 +93,4 @@ if saveFig:
 # Total power and power coefficient
 Ptot = MT_tot*omega
 CP = Ptot/(0.5*rho*V0**3*np.pi*R**2)
+pass

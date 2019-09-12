@@ -57,7 +57,7 @@ class Values:
             upper = 60.0
             first_table = self.FFA_W3_480
             second_table = self.FFA_W3_600
-        elif tc >= 60.0 and tc < 100:
+        elif tc >= 60.0 and tc <= 100:
             range = 5
             lower = 60.0
             upper = 100.
@@ -86,8 +86,8 @@ class Values:
 Values1 = Values(89.17, 3, 10000, 4, 25, 1.225, pd.read_excel("Assignment1.xlsx"), np.loadtxt('FFA-W3-241.txt'),
                  np.loadtxt('FFA-W3-301.txt'), np.loadtxt('FFA-W3-360.txt'), np.loadtxt('FFA-W3-480.txt'),
                  np.loadtxt('FFA-W3-600.txt'), np.loadtxt('cylinder.txt'))
-alpha = 0.5
-R = 22
+alpha = 4.1
+R = 11
 c, beta, tc = Values1.interpolate_r(R)
 cl, cd = Values1.interpolate_tc(tc, alpha)
 pass
