@@ -34,9 +34,9 @@ beta = np.deg2rad(np.array([14.50, 14.43, 12.55, 8.89, 6.38, 4.67,
                               2.89, 1.21, -0.13, -1.11, -1.86, -2.08, 
                               -2.28, -2.64, -2.95, -3.18, -3.36, 
                               -3.43]))
-ratio = np.array([100.00, 100.00, 86.05, 61.10, 43.04, 32.42, 27.81,
+ratio = np.array([100.00, 86.05, 61.10, 43.04, 32.42, 27.81,
                     25.32, 24.26, 24.10, 24.10, 24.10, 24.10, 24.10,
-                    24.10, 24.10, 24.10, 24.10])
+                    24.10, 24.10, 24.10, 24.10, 24.10])
 
 #Import of data
 airFoilThickness = np.array([24.1, 30.1, 36.0, 48.0, 60.0, 100])
@@ -67,10 +67,8 @@ intCm = interp2d(airFoilThickness,FFAdata[:,0,0],FFAdata[:,3,:],
 
 #%%Initialize variables
 a_crit = 1/3
-Fd = np.copy(r)
-Fl = np.copy(r)
-Pn = np.copy(r)
-Pt = np.copy(r)
+Pn = np.zeros([len(r)+1])
+Pt = np.copy(Pn)
 tol = 1E-5
 for i in range(len(r)):
     a = 0; a_prime = 0;
@@ -116,12 +114,12 @@ for i in range(len(r)):
     Pt[i] = Fl*np.sin(phi)-Fd*np.cos(phi)
 
 # Rotor torque along the shaft
-MT_blade = np.trapz(Pt*r, r)
+MT_blade = np.trapz(Pt*r_int, r_int)
 MT_tot = B*MT_blade
 
 
 plt.figure('Tangential force',figsize=(5,4))
-plt.plot(r, Pt, 'xkcd:amber',
+plt.plot(r_int, Pt, 'xkcd:amber',
          label = 'Tangential force distribution')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Radius [m]', fontsize=14)
@@ -132,7 +130,7 @@ if saveFig:
     plt.savefig('TangentialForce.pdf',bbox_inches='tight')
     
 plt.figure('Thurst force',figsize=(5,4))
-plt.plot(r, Pn, 'xkcd:amber',
+plt.plot(r_int, Pn, 'xkcd:amber',
          label = 'Thrust force distribution')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Radius [m]', fontsize=14)
