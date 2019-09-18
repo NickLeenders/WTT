@@ -8,15 +8,18 @@ Created on Thu Sep 12 17:03:35 2019
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import interp2d
-#from main_assignment1 import Values1
 
 
 #%%Parameters
 R = 89.17
+A = np.pi*R**2
 rho = 1.225
-V0 = 8.0
-omega = 0.8
-theta_p = np.deg2rad(-3.0) 
+V0 = 9.0
+#omega = np.array([1.01])
+omega = np.linspace(0.5,1.01,20)
+TSR = omega*R/V0
+#theta_p = np.deg2rad(np.array([-3]))
+theta_p = np.deg2rad(np.linspace(-2,5,15)) 
 B =  3
 
 # Export figures as pdf
@@ -70,52 +73,63 @@ a_crit = 1/3
 Pn = np.zeros([len(r)+1])
 Pt = np.copy(Pn)
 tol = 1E-5
-for i in range(len(r)):
-    a = 0; a_prime = 0;
-    count = 0
+CP = np.zeros([len(theta_p),len(TSR)])
+CT = np.copy(CP)
+"""BEGIN PITCH LOOP"""
+for k in range(len(theta_p)):
 
-    while True:
-        count +=1
-        phi = np.arctan(((1-a)*V0)/((1+a_prime)*omega*r[i]))
-        alpha = phi-(beta[i]+theta_p)
-        #Cl, Cd = Values1.interpolate_tc(tc.values[i], alpha)
-        #Table lookup for Cl, Cd
-        Cl = intCl(ratio[i],np.rad2deg(alpha))
-        Cd = intCd(ratio[i],np.rad2deg(alpha))
-        Cn = Cl*np.cos(phi) + Cd*np.sin(phi)
-        Ct = Cl*np.sin(phi) - Cd*np.cos(phi)
+    """BEGIN OMEGA LOOP"""
+    for j in range(len(TSR)):
+    
+        """BEGIN BEM LOOP"""
+        for i in range(len(r)):
+            a = 0; a_prime = 0;
+            count = 0
         
-        F = 2/np.pi*np.arccos(np.exp((-B/2)*(R-r[i])/(r[i]*np.sin(abs(phi)))))
-        #F = 0.981
+            while True:
+                count +=1
+                phi = np.arctan(((1-a)*V0)/((1+a_prime)*omega[j]*r[i]))
+                alpha = phi-(beta[i]+theta_p[k])
+                #Table lookup for Cl, Cd
+                Cl = intCl(ratio[i],np.rad2deg(alpha))
+                Cd = intCd(ratio[i],np.rad2deg(alpha))
+                Cn = Cl*np.cos(phi) + Cd*np.sin(phi)
+                Ct = Cl*np.sin(phi) - Cd*np.cos(phi)
+                #Prandt's Tip Loss
+                F = 2/np.pi*np.arccos(np.exp((-B/2)*(R-r[i])/(r[i]*np.sin(abs(phi)))))
+                
+                sigma = c[i]*B/(2*np.pi*r[i])       #Solidity
+                #Glauert Correction
+                if a <= a_crit:
+                    anew = 1/(4*F*(np.sin(phi)**2)/(sigma*Cn)+1)
+                else:
+                    CT_glauert = (1-a)**2*Cn*sigma/np.sin(phi)**2
+                    astar = CT_glauert/(4*F*(1-0.25*(5-3*a)*a))
+                    anew = 0.1*astar+0.9*a
+                a_prime = 1/(4*F*(np.sin(phi)*np.cos(phi))/(sigma*Ct)-1)
+                if abs(anew-a) <= tol:
+                    a = anew
+                    break
+                elif count == 200:
+                    print('count > 200')
+                    break
+                else:
+                    a = anew
+            print('Count = ' + str(count))
+            Vrel = V0*(1-a)/np.sin(phi)
+            Fl = 1/2*rho*Vrel**2*c[i]*Cl
+            Fd = 1/2*rho*Vrel**2*c[i]*Cd
+            Pn[i] = Fl*np.cos(phi)+Fd*np.sin(phi)
+            Pt[i] = Fl*np.sin(phi)-Fd*np.cos(phi)
+        """END BEM LOOP"""
         
-        sigma = c[i]*B/(2*np.pi*r[i])
-        #a = 1/(4*F*(np.sin(phi)**2)/(sigma*Cn)-1)
-           
-        if a <= a_crit:
-            anew = 1/(4*F*(np.sin(phi)**2)/(sigma*Cn)+1)
-        else:
-            CT = (1-a)**2*Cn*sigma/np.sin(phi)**2
-            astar = CT/(4*F*(1-0.25*(5-3*a)*a))
-            anew = 0.1*astar+0.9*a
-        a_prime = 1/(4*F*(np.sin(phi)*np.cos(phi))/(sigma*Ct)-1)
-        if abs(anew-a) <= tol:
-            a = anew
-            break
-        elif count == 200:
-            print('count > 200')
-            break
-        else:
-            a = anew
-    print('Count = ' + str(count))
-    Vrel = V0*(1-a)/np.sin(phi)
-    Fl = 1/2*rho*Vrel**2*c[i]*Cl
-    Fd = 1/2*rho*Vrel**2*c[i]*Cd
-    Pn[i] = Fl*np.cos(phi)+Fd*np.sin(phi)
-    Pt[i] = Fl*np.sin(phi)-Fd*np.cos(phi)
-
-# Rotor torque along the shaft
-MT_blade = np.trapz(Pt*r_int, r_int)
-MT_tot = B*MT_blade
+        #Power, Thrust and coefficients
+        Power = omega[j]*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
+        CP[k,j] = Power/(0.5*rho*V0**3*A)
+        Thrust = B*np.trapz(Pn,r_int)                       #Rotor thrust
+        CT[k,j] = Thrust/(0.5*rho*V0**2*A)
+    """END OMEGA LOOP"""
+"""END PITCH LOOP"""
 
 
 plt.figure('Tangential force',figsize=(5,4))
@@ -129,7 +143,7 @@ plt.legend(fontsize = 12)
 if saveFig:
     plt.savefig('TangentialForce.pdf',bbox_inches='tight')
     
-plt.figure('Thurst force',figsize=(5,4))
+plt.figure('Thrust force',figsize=(5,4))
 plt.plot(r_int, Pn, 'xkcd:amber',
          label = 'Thrust force distribution')
 plt.grid(c='k', alpha=.3)
@@ -139,8 +153,16 @@ plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
 if saveFig:
     plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+#%%
+plt.figure('CP map',figsize=(5,4))
+plt.contour(TSR,np.rad2deg(theta_p),CP, 'xkcd:amber',
+         label = 'C_p map', levels = np.linspace(np.min(CP),np.max(CP),20))
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Tip Speed Ratio [-]', fontsize=14)
+plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+if saveFig:
+    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
    
-# Total power and power coefficient
-Ptot = MT_tot*omega
-CP = Ptot/(0.5*rho*V0**3*np.pi*R**2)
-pass
+
