@@ -15,7 +15,7 @@ R = 89.17
 A = np.pi*R**2
 rho = 1.225
 #V0 = 9.0
-V0 = np.linspace(4,11.26,100)
+V0 = np.linspace(4,11.19,100)
 #omega = np.array([1.01])
 #omega = np.linspace(0.5,1.01,20)
 omega = 8./R*V0
@@ -171,7 +171,7 @@ for k in range(len(theta_p)):
 #     plt.savefig('ThrustForce.pdf',bbox_inches='tight')
 # 
 # =============================================================================
-saveFig=False
+saveFig=True
 plt.figure('Omega against V0',figsize=(5,4))
 plt.plot(np.append(V0,25), np.append(omega,omega[-1]), 'xkcd:amber',label='$\omega (V_0)$')
 plt.axvline(x=V0[-1],linestyle='dashed', label = '$V_{0_{max}}$')

@@ -15,9 +15,10 @@ R = 89.17
 A = np.pi*R**2
 rho = 1.225
 V0 = np.linspace(4,25,22)
+V0_rated = 11.19
+omega_rated = 1.004
 B =  3
-EdgeWise_Moment = []
-FlapWise_Moment = []
+
 # Export figures as pdf
 saveFig = 0
 
@@ -72,15 +73,16 @@ tol = 1E-5
 PowerList = np.zeros([2,len(V0)])
 thetaList = np.copy(PowerList); ThrustList = np.copy(PowerList)
 CPList = np.copy(PowerList); CTList = np.copy(PowerList)
-
+EdgeWise_Moment = np.copy(PowerList)
+FlapWise_Moment = np.copy(PowerList)
 """BEGIN WIND SPEED LOOP"""
 for j in range(len(V0)):
-    if V0[j] < 11.26:
+    if V0[j] < V0_rated:
         omega = 8*V0[j]/R
         theta_p = np.array([0])
     else:
-        omega = 1.01
-        theta_p = np.deg2rad(np.linspace(-15,25,250))
+        omega = omega_rated
+        theta_p = np.deg2rad(np.linspace(-15,25,200))
     """BEGIN PITCH LOOP"""
     for k in range(len(theta_p)):              
         """BEGIN BEM LOOP"""
@@ -128,7 +130,7 @@ for j in range(len(V0)):
         #Power, Thrust and coefficients
         Power = omega*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
         Thrust = B*np.trapz(Pn,r_int)                    #Rotor thrust
-        if (abs(Power-10**7) < 3*10**5 and V0[j] > 11.26):
+        if (abs(Power-10**7) < 5*10**5 and V0[j] > V0_rated):
             if theta_p[k] < 0:
                 PowerList[0,j] = Power
                 thetaList[0,j] = theta_p[k]
@@ -136,6 +138,8 @@ for j in range(len(V0)):
                 CPList[0,j] = Power/(0.5*rho*V0[j]**3*A)
                 CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
                 print('Power value for negative pitch added at index:', j)
+                EdgeWise_Moment[0,j] = np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6
+                FlapWise_Moment[0,j] = np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6
             elif theta_p[k] > 0:
                 PowerList[1,j] = Power
                 thetaList[1,j] = theta_p[k]
@@ -143,7 +147,9 @@ for j in range(len(V0)):
                 CPList[1,j] = Power/(0.5*rho*V0[j]**3*A)
                 CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
                 print('Power value for positive pitch added at index:', j)
-        elif V0[j] < 11.26:
+                EdgeWise_Moment[1,j] = np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6
+                FlapWise_Moment[1,j] = np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6
+        elif V0[j] < V0_rated:
             PowerList[0,j] = Power
             PowerList[1,j] = Power
             thetaList[0,j] = theta_p[k]
@@ -153,9 +159,12 @@ for j in range(len(V0)):
             CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
             CPList[1,j] = Power/(0.5*rho*V0[j]**3*A) 
             CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
-        EdgeWise_Moment.append(np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6)
-        FlapWise_Moment.append(np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6)
+            EdgeWise_Moment[0,j] = np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6
+            FlapWise_Moment[0,j] = np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6
+            EdgeWise_Moment[1,j] = np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6
+            FlapWise_Moment[1,j] = np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6
     """END PITCH LOOP"""
+
 """END WIND SPEED LOOP"""
 
 
