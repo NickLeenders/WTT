@@ -14,18 +14,10 @@ from scipy.interpolate import interp2d
 R = 89.17
 A = np.pi*R**2
 rho = 1.225
-#V0 = 9.0
-V0 = np.linspace(4,11.26,10)
-#omega = np.array([1.01])
-#omega = np.linspace(0.5,1.01,20)
-omega = 8./R*V0
-theta_p = np.deg2rad(np.array([0]))
-TSR = omega*R/V0
+V0 = np.linspace(4,25,22)
+B =  3
 EdgeWise_Moment = []
 FlapWise_Moment = []
-#theta_p = np.deg2rad(np.linspace(-2,5,15)) 
-B =  3
-
 # Export figures as pdf
 saveFig = 0
 
@@ -77,15 +69,20 @@ a_crit = 1/3
 Pn = np.zeros([len(r)+1])
 Pt = np.copy(Pn)
 tol = 1E-5
-CP = np.zeros([len(theta_p),len(TSR)])
-CT = np.copy(CP)
+PowerList = np.zeros([2,len(V0)])
+thetaList = np.copy(PowerList); ThrustList = np.copy(PowerList)
+CPList = np.copy(PowerList); CTList = np.copy(PowerList)
 
-"""BEGIN PITCH LOOP"""
-for k in range(len(theta_p)):
-
-    """BEGIN OMEGA LOOP"""
-    for j in range(len(omega)):
-    
+"""BEGIN WIND SPEED LOOP"""
+for j in range(len(V0)):
+    if V0[j] < 11.26:
+        omega = 8*V0[j]/R
+        theta_p = np.array([0])
+    else:
+        omega = 1.01
+        theta_p = np.deg2rad(np.linspace(-15,25,250))
+    """BEGIN PITCH LOOP"""
+    for k in range(len(theta_p)):              
         """BEGIN BEM LOOP"""
         for i in range(len(r)):
             a = 0; a_prime = 0;
@@ -93,7 +90,7 @@ for k in range(len(theta_p)):
         
             while True:
                 count +=1
-                phi = np.arctan(((1-a)*V0[j])/((1+a_prime)*omega[j]*r[i]))
+                phi = np.arctan(((1-a)*V0[j])/((1+a_prime)*omega*r[i]))
                 alpha = phi-(beta[i]+theta_p[k])
                 #Table lookup for Cl, Cd
                 Cl = intCl(ratio[i],np.rad2deg(alpha))
@@ -116,7 +113,7 @@ for k in range(len(theta_p)):
                     a = anew
                     break
                 elif count == 200:
-                    #print('count > 200')
+                    print('count > 200')
                     break
                 else:
                     a = anew
@@ -129,17 +126,37 @@ for k in range(len(theta_p)):
         """END BEM LOOP"""
         
         #Power, Thrust and coefficients
-        Power = omega[j]*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
-        CP[k,j] = Power/(0.5*rho*V0[j]**3*A)
-        Thrust = B*np.trapz(Pn,r_int)                       #Rotor thrust
-        CT[k,j] = Thrust/(0.5*rho*V0[j]**2*A)
+        Power = omega*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
+        Thrust = B*np.trapz(Pn,r_int)                    #Rotor thrust
+        if (abs(Power-10**7) < 3*10**5 and V0[j] > 11.26):
+            if theta_p[k] < 0:
+                PowerList[0,j] = Power
+                thetaList[0,j] = theta_p[k]
+                ThrustList[0,j] = Thrust
+                CPList[0,j] = Power/(0.5*rho*V0[j]**3*A)
+                CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
+                print('Power value for negative pitch added at index:', j)
+            elif theta_p[k] > 0:
+                PowerList[1,j] = Power
+                thetaList[1,j] = theta_p[k]
+                ThrustList[1,j] = Thrust
+                CPList[1,j] = Power/(0.5*rho*V0[j]**3*A)
+                CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
+                print('Power value for positive pitch added at index:', j)
+        elif V0[j] < 11.26:
+            PowerList[0,j] = Power
+            PowerList[1,j] = Power
+            thetaList[0,j] = theta_p[k]
+            ThrustList[0,j] = Thrust
+            ThrustList[1,j] = Thrust
+            CPList[0,j] = Power/(0.5*rho*V0[j]**3*A) 
+            CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
+            CPList[1,j] = Power/(0.5*rho*V0[j]**3*A) 
+            CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
         EdgeWise_Moment.append(np.trapz(Pt*(r_int-2.8), (r_int-2.8))/10**6)
         FlapWise_Moment.append(np.trapz(Pn*(r_int-2.8), (r_int-2.8))/10**6)
-    """END OMEGA LOOP"""
-"""END PITCH LOOP"""
-
-
-
+    """END PITCH LOOP"""
+"""END WIND SPEED LOOP"""
 
 
 plt.figure('Tangential force',figsize=(5,4))
@@ -150,9 +167,9 @@ plt.xlabel('Radius [m]', fontsize=14)
 plt.ylabel('Pt [N]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('TangentialForce.pdf',bbox_inches='tight')
-    
+#if saveFig:
+#    plt.savefig('TangentialForce.pdf',bbox_inches='tight')
+ #%%   
 plt.figure('Thrust force',figsize=(5,4))
 plt.plot(r_int, Pn, 'xkcd:amber',
          label = 'Thrust force distribution')
@@ -161,31 +178,72 @@ plt.xlabel('Radius [m]', fontsize=14)
 plt.ylabel('Pn [N]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+#if saveFig:
+#    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
 #%%
-plt.figure('CP map',figsize=(5,4))
-plt.contour(TSR,np.rad2deg(theta_p),CP, 'xkcd:amber',
-         label = 'C_p map', levels = np.linspace(np.min(CP),np.max(CP),20))
+plt.figure('Pitch angle',figsize=(5,4))
+plt.plot(V0, np.rad2deg(thetaList[0,:]), 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, np.rad2deg(thetaList[1,:]), 'xkcd:amber',
+         label = 'positive')
 plt.grid(c='k', alpha=.3)
-plt.xlabel('Tip Speed Ratio [-]', fontsize=14)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+#if saveFig:
+#    plt.savefig('PitchAngle_vs_WindSpeed.pdf',bbox_inches='tight')
 
-saveFig=True
-plt.figure('Omega against V0',figsize=(5,4))
-plt.plot(np.append(V0,25), np.append(omega,omega[-1]), 'xkcd:amber',label='$\omega (V_0)$')
-plt.axvline(x=V0[-1],linestyle='dashed', label = '$V_{0_{max}}$')
+plt.figure('Thrust Vs Wind speed',figsize=(5,4))
+plt.plot(V0, ThrustList[0,:]/1000, 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, ThrustList[1,:]/1000, 'xkcd:amber',
+         label = 'positive')
 plt.grid(c='k', alpha=.3)
-plt.xlabel('V0 [m/s]', fontsize=14)
-plt.ylabel('Omega (rad/s)', fontsize=14)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('Thrust [kN]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('omegaV0.pdf',bbox_inches='tight')
- 
+#if saveFig:
+#    plt.savefig('Thrust_vs_WindSpeed.pdf',bbox_inches='tight')
+   
+plt.figure('Power Vs Wind speed',figsize=(5,4))
+plt.plot(V0, PowerList[0,:]*1e-6, 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, PowerList[1,:]*1e-6, 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('Power [MW]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('Power_vs_WindSpeed.pdf',bbox_inches='tight')
+
+plt.figure('CT Vs Wind speed',figsize=(5,4))
+plt.plot(V0, CTList[0,:], 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, CTList[1,:], 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('$C_T$ [-]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('CT_vs_WindSpeed.pdf',bbox_inches='tight')
+
+plt.figure('CP Vs Wind speed',figsize=(5,4))
+plt.plot(V0, CPList[0,:], 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, CPList[1,:], 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('$C_P$ [-]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('CP_vs_WindSpeed.pdf',bbox_inches='tight')
    
 
