@@ -181,68 +181,68 @@ plt.legend(fontsize = 12)
 #    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
 #%%
 plt.figure('Pitch angle',figsize=(5,4))
-plt.plot(V0, np.rad2deg(thetaList[0,:]), 'xkcd:amber',
-         label = 'negative')
-plt.plot(V0, np.rad2deg(thetaList[1,:]), 'xkcd:amber',
-         label = 'positive')
+plt.plot(V0, np.rad2deg(thetaList[0,:]),'-x',color = 'blue',
+         label = r'$\theta_p$ < 0')
+plt.plot(V0, np.rad2deg(thetaList[1,:]),'-+',color = 'red',
+         label = r'$\theta_p$ > 0')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-#if saveFig:
-#    plt.savefig('PitchAngle_vs_WindSpeed.pdf',bbox_inches='tight')
+if saveFig:
+    plt.savefig('PitchAngle_vs_WindSpeed.pdf',bbox_inches='tight')
 
 plt.figure('Thrust Vs Wind speed',figsize=(5,4))
-plt.plot(V0, ThrustList[0,:]/1000, 'xkcd:amber',
-         label = 'negative')
-plt.plot(V0, ThrustList[1,:]/1000, 'xkcd:amber',
-         label = 'positive')
+plt.plot(V0, ThrustList[0,:]/1000, '-x',color = 'blue',
+         label = r'$\theta_p$ < 0')
+plt.plot(V0, ThrustList[1,:]/1000, '-+',color = 'red',
+         label = r'$\theta_p$ > 0')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('Thrust [kN]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-#if saveFig:
-#    plt.savefig('Thrust_vs_WindSpeed.pdf',bbox_inches='tight')
+if saveFig:
+    plt.savefig('Thrust_vs_WindSpeed.pdf',bbox_inches='tight')
    
 plt.figure('Power Vs Wind speed',figsize=(5,4))
-plt.plot(V0, PowerList[0,:]*1e-6, 'xkcd:amber',
-         label = 'negative')
-plt.plot(V0, PowerList[1,:]*1e-6, 'xkcd:amber',
-         label = 'positive')
+plt.plot(V0, PowerList[0,:]*1e-6, '-x',color = 'blue',
+         label = r'$\theta_p$ < 0')
+plt.plot(V0, PowerList[1,:]*1e-6, '-+',color = 'red',
+         label = r'$\theta_p$ > 0')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('Power [MW]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-#if saveFig:
-#    plt.savefig('Power_vs_WindSpeed.pdf',bbox_inches='tight')
+if saveFig:
+    plt.savefig('Power_vs_WindSpeed.pdf',bbox_inches='tight')
 
 plt.figure('CT Vs Wind speed',figsize=(5,4))
-plt.plot(V0, CTList[0,:], 'xkcd:amber',
-         label = 'negative')
-plt.plot(V0, CTList[1,:], 'xkcd:amber',
-         label = 'positive')
+plt.plot(V0, CTList[0,:], '-x',color = 'blue',
+         label = r'$\theta_p$ < 0')
+plt.plot(V0, CTList[1,:], '-+',color = 'red',
+         label = r'$\theta_p$ > 0')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('$C_T$ [-]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-#if saveFig:
-#    plt.savefig('CT_vs_WindSpeed.pdf',bbox_inches='tight')
+if saveFig:
+    plt.savefig('CT_vs_WindSpeed.pdf',bbox_inches='tight')
 
 plt.figure('CP Vs Wind speed',figsize=(5,4))
-plt.plot(V0, CPList[0,:], 'xkcd:amber',
-         label = 'negative')
-plt.plot(V0, CPList[1,:], 'xkcd:amber',
-         label = 'positive')
+plt.plot(V0, CPList[0,:], '-x',color = 'blue',
+         label = r'$\theta_p$ < 0')
+plt.plot(V0, CPList[1,:], '-+',color = 'red',
+         label = r'$\theta_p$ > 0')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Wind Speed [m/s]', fontsize=14)
 plt.ylabel('$C_P$ [-]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
-#if saveFig:
-#    plt.savefig('CP_vs_WindSpeed.pdf',bbox_inches='tight')
+if saveFig:
+    plt.savefig('CP_vs_WindSpeed.pdf',bbox_inches='tight')
    
 

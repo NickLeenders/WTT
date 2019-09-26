@@ -18,12 +18,12 @@ V0 = 9.0
 """CHOOSE OMEGA"""
 #omega = np.array([1.01])                       #Single omega
 #omega = np.linspace(0.5,1.01,20)               #Contour: Large range  
-omega = np.linspace(0.7,0.9,40)                 #Contour: Small range
+#omega = np.linspace(0.7,0.9,40)                 #Contour: Small range
 TSR = omega*R/V0
 """CHOOSE PITCH ANGLE"""
-theta_p = np.deg2rad(np.array([-3]))           #Single pitch angle
+#theta_p = np.deg2rad(np.array([-3]))           #Single pitch angle
 #theta_p = np.deg2rad(np.linspace(-2,5,15))     #Contour: Large range
-theta_p = np.deg2rad(np.linspace(-2,2,15))      #Contour: Small range
+#theta_p = np.deg2rad(np.linspace(-2,2,15))      #Contour: Small range
 B =  3
 
 # Export figures as pdf
@@ -159,13 +159,14 @@ plt.legend(fontsize = 12)
 #    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
 #%%
 plt.figure('CP map',figsize=(5,4))
-plt.contour(TSR,np.rad2deg(theta_p),CP, 'xkcd:amber',
+plt.contourf(TSR,np.rad2deg(theta_p),CP, cmap=plt.cm.inferno,
          label = 'C_p map', levels = np.linspace(np.min(CP),np.max(CP),20))
 plt.grid(c='k', alpha=.3)
 plt.xlabel('Tip Speed Ratio [-]', fontsize=14)
 plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
+plt.colorbar()
 if saveFig:
     plt.savefig('CP_Map.pdf',bbox_inches='tight')
    
