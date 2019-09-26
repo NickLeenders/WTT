@@ -15,11 +15,12 @@ R = 89.17
 A = np.pi*R**2
 rho = 1.225
 #V0 = 9.0
-V0 = np.linspace(4,11.26,10)
+V0 = np.linspace(4,11.26,100)
 #omega = np.array([1.01])
 #omega = np.linspace(0.5,1.01,20)
-#TSR = omega*R/V0
 omega = 8./R*V0
+TSR = omega*R/V0
+PowerList = []
 theta_p = np.deg2rad(np.array([0]))
 #theta_p = np.deg2rad(np.linspace(-2,5,15)) 
 B =  3
@@ -128,46 +129,49 @@ for k in range(len(theta_p)):
         
         #Power, Thrust and coefficients
         Power = omega[j]*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
+        PowerList.append(Power)
         CP[k,j] = Power/(0.5*rho*V0[j]**3*A)
         Thrust = B*np.trapz(Pn,r_int)                       #Rotor thrust
         CT[k,j] = Thrust/(0.5*rho*V0[j]**2*A)
     """END OMEGA LOOP"""
 """END PITCH LOOP"""
-
-plt.figure('Tangential force',figsize=(5,4))
-plt.plot(r_int, Pt, 'xkcd:amber',
-         label = 'Tangential force distribution')
-plt.grid(c='k', alpha=.3)
-plt.xlabel('Radius [m]', fontsize=14)
-plt.ylabel('Pt [N]', fontsize=14)
-plt.tick_params(labelsize=12)
-plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('TangentialForce.pdf',bbox_inches='tight')
-    
-plt.figure('Thrust force',figsize=(5,4))
-plt.plot(r_int, Pn, 'xkcd:amber',
-         label = 'Thrust force distribution')
-plt.grid(c='k', alpha=.3)
-plt.xlabel('Radius [m]', fontsize=14)
-plt.ylabel('Pn [N]', fontsize=14)
-plt.tick_params(labelsize=12)
-plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
-#%%
-plt.figure('CP map',figsize=(5,4))
-plt.contour(TSR,np.rad2deg(theta_p),CP, 'xkcd:amber',
-         label = 'C_p map', levels = np.linspace(np.min(CP),np.max(CP),20))
-plt.grid(c='k', alpha=.3)
-plt.xlabel('Tip Speed Ratio [-]', fontsize=14)
-plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
-plt.tick_params(labelsize=12)
-plt.legend(fontsize = 12)
-if saveFig:
-    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
-
-saveFig=True
+# =============================================================================
+# 
+# plt.figure('Tangential force',figsize=(5,4))
+# plt.plot(r_int, Pt, 'xkcd:amber',
+#          label = 'Tangential force distribution')
+# plt.grid(c='k', alpha=.3)
+# plt.xlabel('Radius [m]', fontsize=14)
+# plt.ylabel('Pt [N]', fontsize=14)
+# plt.tick_params(labelsize=12)
+# plt.legend(fontsize = 12)
+# if saveFig:
+#     plt.savefig('TangentialForce.pdf',bbox_inches='tight')
+#     
+# plt.figure('Thrust force',figsize=(5,4))
+# plt.plot(r_int, Pn, 'xkcd:amber',
+#          label = 'Thrust force distribution')
+# plt.grid(c='k', alpha=.3)
+# plt.xlabel('Radius [m]', fontsize=14)
+# plt.ylabel('Pn [N]', fontsize=14)
+# plt.tick_params(labelsize=12)
+# plt.legend(fontsize = 12)
+# if saveFig:
+#     plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+# #%%
+# plt.figure('CP map',figsize=(5,4))
+# plt.contour(TSR,np.rad2deg(theta_p),CP, 'xkcd:amber',
+#          label = 'C_p map', levels = np.linspace(np.min(CP),np.max(CP),20))
+# plt.grid(c='k', alpha=.3)
+# plt.xlabel('Tip Speed Ratio [-]', fontsize=14)
+# plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
+# plt.tick_params(labelsize=12)
+# plt.legend(fontsize = 12)
+# if saveFig:
+#     plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+# 
+# =============================================================================
+saveFig=False
 plt.figure('Omega against V0',figsize=(5,4))
 plt.plot(np.append(V0,25), np.append(omega,omega[-1]), 'xkcd:amber',label='$\omega (V_0)$')
 plt.axvline(x=V0[-1],linestyle='dashed', label = '$V_{0_{max}}$')
