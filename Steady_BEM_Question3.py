@@ -69,9 +69,9 @@ Pn = np.zeros([len(r)+1])
 Pt = np.copy(Pn)
 tol = 1E-5
 PowerList = np.zeros([2,len(V0)])
-thetaList = np.copy(PowerList)
-#CP = np.zeros([len(theta_p),len(TSR)])
-#CT = np.copy(CP)
+thetaList = np.copy(PowerList); ThrustList = np.copy(PowerList)
+CPList = np.copy(PowerList); CTList = np.copy(PowerList)
+
 """BEGIN WIND SPEED LOOP"""
 for j in range(len(V0)):
     if V0[j] < 11.26:
@@ -126,21 +126,32 @@ for j in range(len(V0)):
         
         #Power, Thrust and coefficients
         Power = omega*B*np.trapz(Pt*r_int, r_int)        #Rotor mechanical power
+        Thrust = B*np.trapz(Pn,r_int)                    #Rotor thrust
         if (abs(Power-10**7) < 3*10**5 and V0[j] > 11.26):
             if theta_p[k] < 0:
                 PowerList[0,j] = Power
                 thetaList[0,j] = theta_p[k]
+                ThrustList[0,j] = Thrust
+                CPList[0,j] = Power/(0.5*rho*V0[j]**3*A)
+                CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
                 print('Power value for negative pitch added at index:', j)
             elif theta_p[k] > 0:
                 PowerList[1,j] = Power
                 thetaList[1,j] = theta_p[k]
+                ThrustList[1,j] = Thrust
+                CPList[1,j] = Power/(0.5*rho*V0[j]**3*A)
+                CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
                 print('Power value for positive pitch added at index:', j)
         elif V0[j] < 11.26:
             PowerList[0,j] = Power
+            PowerList[1,j] = Power
             thetaList[0,j] = theta_p[k]
-        #CP[k,j] = Power/(0.5*rho*V0[j]**3*A)
-        #Thrust = B*np.trapz(Pn,r_int)                       #Rotor thrust
-        #CT[k,j] = Thrust/(0.5*rho*V0[j]**2*A)   
+            ThrustList[0,j] = Thrust
+            ThrustList[1,j] = Thrust
+            CPList[0,j] = Power/(0.5*rho*V0[j]**3*A) 
+            CTList[0,j] = Thrust/(0.5*rho*V0[j]**2*A)
+            CPList[1,j] = Power/(0.5*rho*V0[j]**3*A) 
+            CTList[1,j] = Thrust/(0.5*rho*V0[j]**2*A)
     """END PITCH LOOP"""
 """END WIND SPEED LOOP"""
 
@@ -155,7 +166,7 @@ plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
 #if saveFig:
 #    plt.savefig('TangentialForce.pdf',bbox_inches='tight')
-    
+ #%%   
 plt.figure('Thrust force',figsize=(5,4))
 plt.plot(r_int, Pn, 'xkcd:amber',
          label = 'Thrust force distribution')
@@ -167,7 +178,7 @@ plt.legend(fontsize = 12)
 #if saveFig:
 #    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
 #%%
-plt.figure('Thrust force',figsize=(5,4))
+plt.figure('Pitch angle',figsize=(5,4))
 plt.plot(V0, np.rad2deg(thetaList[0,:]), 'xkcd:amber',
          label = 'negative')
 plt.plot(V0, np.rad2deg(thetaList[1,:]), 'xkcd:amber',
@@ -178,6 +189,58 @@ plt.ylabel('Pitch angle [$\degree$]', fontsize=14)
 plt.tick_params(labelsize=12)
 plt.legend(fontsize = 12)
 #if saveFig:
-#    plt.savefig('ThrustForce.pdf',bbox_inches='tight')
+#    plt.savefig('PitchAngle_vs_WindSpeed.pdf',bbox_inches='tight')
+
+plt.figure('Thrust Vs Wind speed',figsize=(5,4))
+plt.plot(V0, ThrustList[0,:]/1000, 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, ThrustList[1,:]/1000, 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('Thrust [kN]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('Thrust_vs_WindSpeed.pdf',bbox_inches='tight')
+   
+plt.figure('Power Vs Wind speed',figsize=(5,4))
+plt.plot(V0, PowerList[0,:]*1e-6, 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, PowerList[1,:]*1e-6, 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('Power [MW]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('Power_vs_WindSpeed.pdf',bbox_inches='tight')
+
+plt.figure('CT Vs Wind speed',figsize=(5,4))
+plt.plot(V0, CTList[0,:], 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, CTList[1,:], 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('$C_T$ [-]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('CT_vs_WindSpeed.pdf',bbox_inches='tight')
+
+plt.figure('CP Vs Wind speed',figsize=(5,4))
+plt.plot(V0, CPList[0,:], 'xkcd:amber',
+         label = 'negative')
+plt.plot(V0, CPList[1,:], 'xkcd:amber',
+         label = 'positive')
+plt.grid(c='k', alpha=.3)
+plt.xlabel('Wind Speed [m/s]', fontsize=14)
+plt.ylabel('$C_P$ [-]', fontsize=14)
+plt.tick_params(labelsize=12)
+plt.legend(fontsize = 12)
+#if saveFig:
+#    plt.savefig('CP_vs_WindSpeed.pdf',bbox_inches='tight')
    
 
