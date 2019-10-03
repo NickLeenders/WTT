@@ -17,17 +17,17 @@ rho = 1.225
 
 
 #V0 = 9.0
-V0 = np.linspace(4,11.26,10)
+V0 = np.linspace(4,11.19,100)
 #omega = np.array([1.01])
 #omega = np.linspace(0.5,1.01,20)
 #TSR = omega*R/V0
-omega = 8./R*V0
+omega = 8.0/R*V0
 theta_p = np.deg2rad(np.array([0]))
 #theta_p = np.deg2rad(np.linspace(-2,5,15)) 
 B =  3
 
 # Export figures as pdf
-saveFig = 0
+saveFig = 1
 
 #%% Reference wind turbine blade description
 r = np.zeros([18])
@@ -136,26 +136,31 @@ for k in range(len(theta_p)):
         CT[k,j] = Thrust/(0.5*rho*V0[j]**2*A)
     """END OMEGA LOOP"""
 """END PITCH LOOP"""
+
+plt.figure('Test', figsize = (5,4))
+plt.plot(V0, Power)
 #%% Start Question 5
 
 # Create an array of power values corresponding to V0
-nAppend = 40
-for i in range(nAppend):
+Vin = 4
+Vout =  25
+Vout_2 = 20
+
+nAppend = 500
+Append_list = np.linspace(11.19, Vout, nAppend)
+for item in Append_list:
+    print(item)
     Power = np.append(Power, Power[-1])
+    V0 = np.append(V0, item)
 
 
 #%% Weibull distribution parameters
 A = 9
 k = 1.9
 
-Vin = 4
-Vout =  25
-Vout_2 = 20
-
-V0 = np.linspace(Vin, Vout ,len(V0)+nAppend)
 idx = (np.abs(V0-Vout_2)).argmin()
 V0_2 = V0[0:idx+1]
-Power_2 = Power[0:idx+1]
+#Power_2 = Power[0:idx+1]
     
 
 # Supply array of Pi values for each Vi in V0
@@ -179,7 +184,9 @@ Power_2 = Power[0:idx+1]
 
 
 fi = np.zeros(len(V0)-1)
-fi_2 = np.zeros(len(V0_2)-1)
+#fi_2 = np.zeros(len(V0_2)-1)
+fi_2 = np.zeros(idx)
+fi_check = np.zeros(len(V0)-1)
 
 for i in range(len(V0)-1):
     fi[i] = 0.5*(Power[i]+Power[i+1])*8760*(np.exp(-(V0[i]/A)**k)-np.exp(-(V0[i+1]/A)**k))
@@ -192,13 +199,42 @@ for i in range(len(V0_2)-1):
     fi_2[i] = 0.5*(Power[i]+Power[i+1])*8760*(np.exp(-(V0_2[i]/A)**k)-np.exp(-(V0_2[i+1]/A)**k))    
 AEO_2 = sum(fi_2)/10**9
 
+# AEO - AEO2 should converge to this
+test_diff = Power[-1]*8760*(np.exp(-(20/A)**k)-np.exp(-(25/A)**k))/10**9
+
 # Plot pdf for given distribution
 f_weib_V0 = stats.weibull_min.pdf(V0, c=k, scale=A)
 f_weib_V2 = stats.weibull_min.pdf(V0_2, c=k, scale=A)
+
+# PDF plot
 plt.figure('Weibull PDF', figsize = (5,4))
-plt.plot(V0, f_weib_V0, 'xkcd:amber', label = 'Weibull PDF')
+plt.plot(V0, f_weib_V0, 'red', label = 'Weibull PDF, $V_{out}$ = 25 m/s')
+plt.plot(V0_2, f_weib_V2, 'blue', label = 'Weibull PDF, $V_{out}$ = 20 m/s')
 plt.grid(c='k', alpha = .3)
-plt.xlabel('Wind speed V0 [m/s]', fontsize = 14)
+plt.xlabel('Wind speed $V_{0}$ [m/s]', fontsize = 14)
 plt.ylabel('Probability density', fontsize = 14)
-plt.fill_between(V0, f_weib_V0, color = 'xkcd:red')
-plt.fill_between(V0_2, f_weib_V2, color = 'xkcd:amber')
+plt.fill_between(V0, f_weib_V0, color = 'red')
+plt.fill_between(V0_2, f_weib_V2, color = 'blue')
+if saveFig:
+    plt.savefig('Weibull_PDF.pdf',bbox_inches='tight')
+    
+# CDF Plot
+F_weib = stats.weibull_min.cdf(V0, c=k, scale=A)
+F_weib_2 = stats.weibull_min.cdf(V0_2, c=k, scale=A)
+plt.figure('Weibull CDF', figsize = (5,4))
+plt.plot(V0, F_weib, 'red', label = 'Weibull CDF, $V_{out}$ = 25 m/s')
+plt.plot(V0_2, F_weib_2, 'blue', label = 'Weibull CDF, $V_{out}$ = 20 m/s')
+plt.grid(c='k', alpha = .3)
+plt.xlabel('Wind speed $V_{0}$ [m/s]', fontsize = 14)
+plt.ylabel('Cumulative probability', fontsize = 14)
+if saveFig:
+    plt.savefig('Weibull_CDF.pdf',bbox_inches='tight')
+
+# Probability of exceedance of 20 m/s windspeed
+F_20 = stats.weibull_min.cdf(20, c=k, scale=A)
+
+# Percent decrease in AEP
+Perc_decrease = (AEO-AEO_2)/AEO*100
+    
+# Money loss assuming 0.77 kr./kWh
+0.77*(10**6)*(AEO-AEO_2)
