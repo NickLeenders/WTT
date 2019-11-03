@@ -37,10 +37,12 @@ tol = 1E-15
 #    dValstest[i] = di
 
 Pmech = Kmech*omegaMech**3
+
+# From solving the SoE: (see mathematica)
 dVals = np.arcsin(2*Pmech*Ls/(Ke**2*omegaEl))/2
 Ig = Ke*np.sin(dVals)/Ls
 
-Vg = Ke*omegaEl*np.sin(dVals)-Ig*Rs
+Vg = Ke*omegaEl*np.cos(dVals)-Ig*Rs
 PlossPhase = Rs*Ig**2
 Ploss = 3*PlossPhase
 
@@ -53,4 +55,15 @@ plt.xlabel('RPM')
 plt.ylabel('$P_{loss} [W]$')
 plt.grid()
 
+plt.figure()
+plt.plot(RPM, Vg)
+plt.xlabel('RPM')
+plt.ylabel('$Vg [V]$')
+plt.grid()
+
+plt.figure()
+plt.plot(RPM, Ig)
+plt.xlabel('RPM')
+plt.ylabel('Ig [A]')
+plt.grid()
 
