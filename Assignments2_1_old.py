@@ -58,8 +58,8 @@ Vc = Ic*(R_cable+1j*omegaGrid*L_cable)+Vpoc
 
 
 S2_complex = Ipoc*Vpoc
-P2 = S2_complex.real
-Q2 = S2_complex.imag
+P2 = Ic.real*Vc.real
+Q2 = Ic.imag*Vc.imag
 S2 = np.sqrt(S2_complex.imag**2+S2_complex.real**2)
 
 PF = np.divide(P2,S2) # Power factor
@@ -67,6 +67,8 @@ PF = np.divide(P2,S2) # Power factor
 plt.cla()   # Clear axis
 plt.clf()   # Clear figure
 plt.close() # Close a figure window
+
+plt.figure()
 plt.plot(RPM,abs(P2))
 plt.plot(RPM,abs(Q2))
 plt.xlabel('n (RPM)')
