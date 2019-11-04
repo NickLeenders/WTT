@@ -21,23 +21,37 @@ L1 = 2*10**-6 #unit H (Transformer)
 R1 = 2*10**-3 #unit Ohm (Transformer)
 L2 = 2*10**-6 #unit H (Transformer)
 R2 = 2*10**-3 #unit Ohm (Transformer)
+
+omegaGrid = 2*np.pi*50
 # Transformer
 Vlow = 690 #unit V
 Vhigh = 33*10**3 #unit V
 N_ratio = Vlow/Vhigh # (N1/N2) no unit
-
-R_cable = 1*N_ratio**2 #Unit Ohm
-L_cable = 5*10**-3*N_ratio**2 #Unit H
+Lcable = 10 #Unit km
+R_cable = 1 #Unit Ohm
+L_cable = 5*10**-3 #Unit H
 C_cable = 1*10**-6 #Unit F
 
 V_rms = Vhigh/np.sqrt(3)
-V_poc = V_rms*np.cos(phi)+1j*V_rms*np.sin(phi)
+
+Z1 = R1 + L1*1j*omegaGrid
+Z2 = R1 + L1*1j*omegaGrid
+Zc = R_cable + 1j*omegaGrid*L_cable
+Ztotal = Z1/N_ratio**2+Z2/N_ratio**2+Zc
+Zcap = -1j/(omegaGrid*C_cable)
+
+I1 = Ig*N_ratio
+V2 = Vg/N_ratio
+V_poc = -I1*Ztotal+V2
 
 
-Ic = (V_poc)/(-1/(omegaEl*C_cable))
+
+Ic = -(I1*Ztotal-V2)/(Zcap)
+I2 = (I1*Zcap+I1*Ztotal-V2)/(Zcap)
+
 #Vt = (-1j*omegaEl*(L1+L2+L_cable)+(R1+R2+R_cable))*Ig
 #Pg = 3*(Pmech - PlossPhase)
-S_poc = 3*(V_poc)*np.conj(Ig*N_ratio + 1j*Ic)
+S_poc = 3*(V_poc)*np.conj(I2 + Ic)
 #P_poc = Pg - 3*(R1+R2+R_cable)*Ig**2
 #Q_poc = 3*(-omegaEl*(L1+L2+L_cable)*Ig**2 + Ic**2*(1/(omegaEl*C_cable)))
 P_poc = S_poc.real
