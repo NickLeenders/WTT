@@ -67,8 +67,12 @@ plt.clf()   # Clear figure
 plt.close() # Close a figure window
 
 plt.figure()
-plt.plot(RPM,abs(P_poc))
-plt.plot(RPM,abs(Q_poc))
+P_poc_plot = P_poc/10**6
+Q_poc_plot = Q_poc/10**6
+plt.plot(RPM,abs(P_poc_plot))
+plt.plot(RPM,abs(Q_poc_plot))
+plt.grid()
 plt.xlabel('n (RPM)')
-plt.ylabel('Power (W)')
-plt.legend(['Active power','Reactive power'])
+plt.ylabel('Power (MW or MVAr)')
+plt.legend(['Active power (MW)','Reactive power (MVAr)'])
+plt.savefig('S_figure.pdf')
