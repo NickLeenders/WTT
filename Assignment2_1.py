@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from Assignment_2_Q2 import Vg,Ig,omegaEl,RPM,PlossPhase,Pmech
 from assignment2 import phi
 
+Pg = Vg*Ig
+
 plt.cla()   # Clear axis
 plt.clf()   # Clear figure
 plt.close() # Close a figure window
@@ -60,7 +62,7 @@ PhaseShift = np.arctan(Q_poc/P_poc)
 
 PF = P_poc/np.sqrt(P_poc**2+Q_poc**2) # Power factor
 
-Efficiency = P_poc/(3*Pmech)
+Efficiency = P_poc/(3*Pmech)*100
 
 plt.cla()   # Clear axis
 plt.clf()   # Clear figure
@@ -76,3 +78,10 @@ plt.xlabel('n (RPM)')
 plt.ylabel('Power (MW or MVAr)')
 plt.legend(['Active power (MW)','Reactive power (MVAr)'])
 plt.savefig('S_figure.pdf')
+
+plt.figure()
+plt.plot(RPM,Efficiency)
+plt.grid()
+plt.xlabel('n (RPM)')
+plt.ylabel('Efficiency (%)')
+plt.savefig('Efficiency.pdf')
