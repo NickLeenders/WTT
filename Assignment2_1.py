@@ -49,11 +49,11 @@ V_poc = -I1*Ztotal+V2
 
 
 Ic = -(I1*Ztotal-V2)/(Zcap)
-I2 = (I1*Zcap+I1*Ztotal-V2)/(Zcap)
+Igrid = (I1*Zcap+I1*Ztotal-V2)/(Zcap)
 
 #Vt = (-1j*omegaEl*(L1+L2+L_cable)+(R1+R2+R_cable))*Ig
 #Pg = 3*(Pmech - PlossPhase)
-S_poc = 3*(V_poc)*np.conj(I2 + Ic)
+S_poc = 3*(V_poc)*np.conj(Igrid + Ic)
 #P_poc = Pg - 3*(R1+R2+R_cable)*Ig**2
 #Q_poc = 3*(-omegaEl*(L1+L2+L_cable)*Ig**2 + Ic**2*(1/(omegaEl*C_cable)))
 P_poc = S_poc.real
