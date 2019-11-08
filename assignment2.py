@@ -50,7 +50,7 @@ phid = np.rad2deg(phi)
 
  #%%  plot acceleration at tip of blade 1
 plt.figure('Generator power loss',figsize=(5,4))
-plt.plot(n_rpm,P_loss,'xkcd:amber',label = 'Generator power loss')
+#plt.plot(n_rpm,P_loss,'xkcd:amber',label = 'Generator power loss')
 plt.grid(c='k', alpha=.3)
 plt.xlabel('RPM [-]', fontsize=14)
 plt.ylabel('Power loss [W]', fontsize=14)
